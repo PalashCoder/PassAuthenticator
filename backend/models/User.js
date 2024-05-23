@@ -8,7 +8,7 @@ const PasswordSchema = new mongoose.Schema({
 
 const UserSchema = new mongoose.Schema({
   googleId: { type: String, required: true, unique: true },
-  secret: { type: String, required: true },
+  hardwareId: { type: String, required: false},
   passwords: [PasswordSchema],
 });
 

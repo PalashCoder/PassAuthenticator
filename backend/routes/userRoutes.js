@@ -9,17 +9,17 @@ const generateToken = (id) => {
 };
 
 router.post("/login", async (req, res) => {
-  const { googleId, secret } = req.body;
+  const { googleId } = req.body;
   try {
     let user = await User.findOne({ googleId });
     if (!user) {
-      user = new User({ googleId, secret, passwords: [] });
+      user = new User({ googleId, hardwareId, passwords: [] });
       await user.save();
     }
     const token = generateToken(user._id);
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ message: "Error logging in" });
+    res.status(500).json({ message: "Error logging in & "+error });
   }
 });
 
@@ -73,6 +73,56 @@ router.post("/delete-password", async (req, res) => {
     res.json({ message: "Password deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting password" });
+  }
+});
+
+router.post("/add-hardware-token", async (req, res) => {
+  const { token, hardwareId } = req.body;
+  try {
+    const decoded = jwt.verify(token, "secretkey");
+    const user = await User.findById(decoded.id);
+    user.hardwareId = hardwareId;
+    await user.save();
+    res.json({ message: "Hardware token added successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding hardware token" });
+  }
+});
+
+router.get("/get-hardware-token", async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, "secretkey");
+    const user = await User.findById(decoded.id);
+    res.json(user.hardwareId);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching hardware token" });
+  }
+});
+
+router.post("/delete-hardware-token", async (req, res) => {
+  const { token } = req.body;
+  try {
+    const decoded = jwt.verify(token, "secretkey");
+    const user = await User.findById(decoded.id);
+    user.hardwareId = null;
+    await user.save();
+    res.json({ message: "Hardware token deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting hardware token" });
+  }
+});
+
+router.post("/edit-hardware-token", async (req, res) => {
+  const { token, hardwareId } = req.body;
+  try {
+    const decoded = jwt.verify(token, "secretkey");
+    const user = await User.findById(decoded.id);
+    user.hardwareId = hardwareId;
+    await user.save();
+    res.json({ message: "Hardware token updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating hardware token" });
   }
 });
 
